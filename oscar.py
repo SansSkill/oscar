@@ -37,7 +37,7 @@ def getToken(x):
 		f = open(os.path.expanduser(x), "r")  # Open the file with expanding user/home path
 		
 		if debug:
-			log("Token", "I", "Successfully read " + x)
+			log("Token", "OK", "Successfully read " + x)
 		
 		r = f.read()
 		f.close()
@@ -70,7 +70,7 @@ keys = {
 }  # Tokens, client IDs, SRC game IDs, etc (should probably move to another file and read from there)
 
 if debug:
-	log("Core", "OK", "Loaded modules and keys")
+	log("Core", "OK", "Loaded keys")
 
 # SRC returns some weird human-like time in the API - a library for this probably exists somewhere
 def humanTime(x):
@@ -180,7 +180,7 @@ async def on_ready():
 		runs[game] = {}  # Add game to the dict
 		
 		for category in await src('games/' + game + '/categories'):  # Get categories and loop through them
-			if category['type'] == "per-game":  # Only full-game runs (TO-DO: implement individual level runs)
+			if category['type'] == "per-game":  # Only full-game runs (per-level runs don't give us enough info here)
 				if debug:
 					log("SRC", "D", "Category " + category['id'])
 				
@@ -197,13 +197,36 @@ async def on_ready():
 				
 				if debug:
 					log("SRC", "D", "WR " + str(runs[game][category['id']]['_wr']))
+		
+		for level in await src('games/' + game + '/levels'):  # Get individual levels (they behave like games)
+			if debug:
+				log("SRC", "D", "Level " + level['id'])
+			
+			runs[level['id']] = {}  # Add level to the dict
+			
+			for category in await src('levels/' + level['id'] + '/categories'):
+				if debug:
+					log("SRC", "D", "Category " + category['id'])
+				
+				runs[level['id']][category['id']] = {'_wr': 999999999}
+				
+				for run in (await src('leaderboards/' + game + '/level/' + level['id'] + '/' + category['id']))['runs']:
+					runs[level['id']][category['id']][run['run']['players'][0]['id']] = run['run']['times']['primary_t']
+					
+					if debug:
+						log("SRC", "D", str(run['run']['players'][0]['id']) + " " + str(run['run']['times']['primary_t']))
+					
+					if run["place"] == 1:  # If WR
+						runs[level['id']][category['id']]['_wr'] = run['run']['times']['primary_t']
+				
+				if debug:
+					log("SRC", "D", "WR " + str(runs[level['id']][category['id']]['_wr']))
 	
 	if debug:
 		log("SRC", "OK", "Run database initialized")
 		log("Core", "OK", "Setup complete")
 	
-	# Main loop - on average takes about 10 seconds to execute on AWS, 7-8 seconds locally (difference in ping to SRC) - can take up to 70-80 seconds when SRC is under load
-	# not rate limited at that pace, but in case we optimize it further we can use asyncio.sleep() to avoid getting rate limited
+	# Main loop
 	while True:
 		if debug:
 			log("Twitch", "I", "Getting OSC livestreams")
@@ -305,7 +328,60 @@ async def on_ready():
 							embed.set_footer(text="Congratulations!")
 							
 							await sendEmbed(records, embed)
-
+			
+			for level in await src('games/' + game + '/levels'):
+				if debug:
+					log("SRC", "D", "Level " + level['id'])
+				
+				if level['id'] not in runs:  # It is possible a mod adds another individual level while we're running the script
+					runs[level['id']] = {}
+				
+				for category in await src('levels/' + level['id'] + '/categories'):
+					if debug:
+						log("SRC", "D", "Category " + category['id'])
+					
+					if category['id'] not in runs[level['id']]:
+						runs[level['id']][category['id']] = {'_wr': 999999999}
+					
+					for run in (await src('leaderboards/' + game + '/level/' + level['id'] + '/' + category['id']))['runs']:
+						if debug:
+							log("SRC", "D", str(run['run']['players'][0]['id']) + " " + str(run['run']['times']['primary_t']))
+						
+						if run['run']['players'][0]['id'] not in runs[level['id']][category['id']]:
+							runs[level['id']][category['id']][run['run']['players'][0]['id']] = 999999999
+						
+						if run['run']['times']['primary_t'] < runs[level['id']][category['id']][run['run']['players'][0]['id']]:
+							runs[level['id']][category['id']][run['run']['players'][0]['id']] = run['run']['times']['primary_t']
+							
+							text = " has achieved a new Personal Best!"
+							
+							if run["place"] == 1:
+								text = " has set the new World Record!"
+								
+								if run['run']['times']['primary_t'] == runs[level['id']][category['id']]['_wr']:
+									text = " has tied the current World Record!"
+									
+									if debug:
+										log("SRC", "I", "^ Tied WR")
+								
+								else:
+									runs[level['id']][category['id']]['_wr'] = run['run']['times']['primary_t']
+									
+									if debug:
+										log("SRC", "I", "^ New WR")
+							
+							elif debug:
+								log("SRC", "I", "^ New PB")
+							
+							runner = (await src('users/' + run['run']['players'][0]['id']))['names']['international']
+							
+							# https://cog-creators.github.io/discord-embed-sandbox/
+							embed=discord.Embed(title=humanTime(run['run']['times']['primary_t']) + " in " + keys['games'][game] + ": " + level['name'] + " (" + category['name'] + ")", description=run['run']['weblink'])
+							embed.set_author(name=runner + text)
+							embed.set_footer(text="Congratulations!")
+							
+							await sendEmbed(records, embed)
+				
 # Placeholder function for possible message interactions with the bot (commands) - unused for now
 @disc.event
 async def on_message(m):
