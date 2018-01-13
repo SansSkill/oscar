@@ -55,12 +55,12 @@ keys = {
 	'community': 'b70126ca-59d9-4f19-afc6-92477a0e00e2',
 	'streams': '398462254603042819',
 	'records': '398657127675068417',
-	'games': {
-		'3dx7r56y': 'Croc 2 (GBC)',
-		'46wwvl6r': 'Defy Gravity',
-		'76r9q568': 'Lost Kingdoms',
-		'pdvjo9dw': 'Mr. Nutz'
-	},
+	'games': [
+		'3dx7r56y',  # Croc 2
+		'46wwvl6r',  # Defy Gravity Extended
+		'76r9q568',  # Lost Kingdoms
+		'pdvjo9dw',  # Mr. Nutz
+	],
 	'twitch-games': [
 		'5776',   # Croc 2
 		'32283',  # Defy Gravity Extended
@@ -74,16 +74,20 @@ if debug:
 
 # SRC returns some weird human-like time in the API - a library for this probably exists somewhere
 def humanTime(x):
-	x = int(x)
+	x = float(x)
 	
-	s = str(x % 60)
-	m = str((x // 60) % 60)
-	h = x // 3600
+	s = str(int(x) % 60)
+	m = str((int(x) // 60) % 60)
+	h = int(x) // 3600
 	
 	s = ("0" * (2 - len(s))) + s
 	m = ("0" * (2 - len(m))) + m
 	
-	return ((str(h) + ":") if h > 0 else "") + m + ":" + s
+	ms = ""
+	if x != int(x):
+		ms = (str(x - int(x)) + "0000")[1:5]
+	
+	return ((str(h) + ":") if h > 0 else "") + m + ":" + s + ms
 
 # Asynchronous HTTP requests are required for keeping up the heartbeat of the Discord connection
 # If done synchronously, they can sometimes take a long time to return, enough for the heartbeat to time out, killing the bot
@@ -269,7 +273,7 @@ async def on_ready():
 		
 		for live in streaming:
 			if live not in now:
-				streaming[live][1] = False  # Anyone not streaming gets set to False (if statement checking whether the value needs changing would be redundant)
+				streaming[live][1] = False  # Anyone not streaming is set to False (if statement checking whether the value needs changing would be redundant)
 			
 			if debug:
 				log("Twitch", "D", "Streamer " + live + " " + str(streaming[live]) + " (" + ((str(streaming[live][0] - int(time.time())) + " until ") if streaming[live][0] - int(time.time()) >= 0 else "") + "expired)")
@@ -320,12 +324,13 @@ async def on_ready():
 							elif debug:
 								log("SRC", "I", "^ New PB")
 							
-							runner = (await src('users/' + run['run']['players'][0]['id']))['names']['international']  # Get runner username (we only have runner ID in the run information)
+							runner = (await src('users/' + run['run']['players'][0]['id']))['names']['international']
+							gameInfo = await src('games/' + game)
 							
 							# https://cog-creators.github.io/discord-embed-sandbox/
-							embed=discord.Embed(title=humanTime(run['run']['times']['primary_t']) + " in " + keys['games'][game] + " (" + category['name'] + ")", description=run['run']['weblink'])
-							embed.set_author(name=runner + text)
-							embed.set_footer(text="Congratulations!")
+							embed=discord.Embed(title=humanTime(run['run']['times']['primary_t']) + " in " + gameInfo['names']['international'] + ": " + level['name'] + " (" + category['name'] + ")", description=run['run']['weblink'])
+							embed.set_author(name=runner + text, icon_url='https://www.speedrun.com/themes/user/' + runner + '/image.png')
+							embed.set_footer(text="Congratulations!", icon_url=gameInfo['assets']['cover-medium']['uri'])
 							
 							await sendEmbed(records, embed)
 			
@@ -374,11 +379,12 @@ async def on_ready():
 								log("SRC", "I", "^ New PB")
 							
 							runner = (await src('users/' + run['run']['players'][0]['id']))['names']['international']
+							gameInfo = await src('games/' + game)
 							
 							# https://cog-creators.github.io/discord-embed-sandbox/
-							embed=discord.Embed(title=humanTime(run['run']['times']['primary_t']) + " in " + keys['games'][game] + ": " + level['name'] + " (" + category['name'] + ")", description=run['run']['weblink'])
-							embed.set_author(name=runner + text)
-							embed.set_footer(text="Congratulations!")
+							embed=discord.Embed(title=humanTime(run['run']['times']['primary_t']) + " in " + gameInfo['names']['international'] + ": " + level['name'] + " (" + category['name'] + ")", description=run['run']['weblink'])
+							embed.set_author(name=runner + text, icon_url='https://www.speedrun.com/themes/user/' + runner + '/image.png')
+							embed.set_footer(text="Congratulations!", icon_url=gameInfo['assets']['cover-medium']['uri'])
 							
 							await sendEmbed(records, embed)
 				
