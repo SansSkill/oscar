@@ -328,7 +328,7 @@ async def on_ready():
 							gameInfo = await src('games/' + game)
 							
 							# https://cog-creators.github.io/discord-embed-sandbox/
-							embed=discord.Embed(title=humanTime(run['run']['times']['primary_t']) + " in " + gameInfo['names']['international'] + ": " + level['name'] + " (" + category['name'] + ")", description=run['run']['weblink'])
+							embed=discord.Embed(title=humanTime(run['run']['times']['primary_t']) + " in " + gameInfo['names']['international'] + " (" + category['name'] + ")", description=run['run']['weblink'])
 							embed.set_author(name=runner + text, icon_url='https://www.speedrun.com/themes/user/' + runner + '/image.png')
 							embed.set_footer(text="Congratulations!", icon_url=gameInfo['assets']['cover-medium']['uri'])
 							
