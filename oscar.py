@@ -66,7 +66,8 @@ keys = {
 		'32283',  # Defy Gravity Extended
 		'924',    # Lost Kingdoms
 		'14039'   # Mr. Nutz
-	]
+	],
+	'submissions': 'test_channel'
 }  # Tokens, client IDs, SRC game IDs, etc (should probably move to another file and read from there)
 
 if debug:
@@ -152,7 +153,36 @@ async def sendEmbed(channel, embed):
 	if debug:
 		log("Discord", "OK", "Message " + ("sent" if dSend else "skipped"))
 
-# This function runs when the Discord client has initialized - since running disc.run() halts the main synchronous thread, all following code must go here
+# Read submissions from disk
+def getSubmissions():
+	try:
+		f = open(os.path.expanduser("~/.oscar/submissions.db"), "r")
+		
+		if debug:
+			log("Submit", "OK", "Successfully read submissions.db")
+		
+		r = f.read().split("\n")
+		f.close()
+		
+		if r == [""]:  # Failsafe for empty file (starting point - 0 submissions)
+			r = []
+		
+		return r
+	
+	except FileNotFoundError:
+		log("Submit", "E", "Can't read file 'submissions.db'. Please verify that the file exists.")
+		sys.exit()
+
+# Write submissions to disk
+def setSubmissions(x):
+	f = open(os.path.expanduser("~/.oscar/submissions.db"), "w")
+	f.write('\n'.join(x))  # Separate by newline
+	f.close()
+	
+	if debug:
+		log("Submit", "OK", "Successfully wrote submissions.db to disk")
+
+# This function runs when the Discord client has initialized - since calling disc.run() halts the main synchronous thread, all following code must go here
 @disc.event
 async def on_ready():
 	global keys, disc  # These global definitions are probably not required anywhere, but I like to be sure
@@ -395,6 +425,33 @@ async def on_message(m):
 	
 	if m.author == disc.user:  # Return if BOT receives its own message (happens basically every time it sends one)
 		return
+	
+	if str(m.channel) == keys['submissions']:  # Game submissions
+		if debug:
+			log("Discord", "D", "Received message from " + m.channel.name + " - " + m.author.name + " - " + m.content)
+		
+		if " | " in m.content:  # If user attempted submit format
+			if m.content.count(' | ') == 4:  # User got it right
+				sub = getSubmissions()  # Read submissions
+				
+				hasSubmitted = -1  # Index of user submission, if they are resubmitting
+				for i in range(len(sub)):
+					if sub[i].split(" | ")[0] == str(m.author):  # Found old submissiom
+						hasSubmitted = i
+						break
+				
+				if hasSubmitted > -1:  # If user is resubmitting
+					sub[hasSubmitted] = str(m.author) + " | " + m.content
+					await send(m.channel, m.author.name + ", you've submitted a second time, thus your previous submission has been overridden by the new one. Thank you for your submission! :heart:")
+					
+				else:  # New submission
+					sub.append(str(m.author) + " | " + m.content)
+					await send(m.channel, m.author.name + ", thank you for your game submission! I've accepted your submission and will keep it safe until voting begins. :heart:")
+				
+				setSubmissions(sub)  # Save submissions
+			
+			else:  # User got it wrong
+				await send(m.channel, m.author.name + ", you seem to have attempted a game submission but it was formatted incorrectly. Please make sure your message is formatted as shown here:```Game Name | Platform(s) | Price | SRC link (or YouTube video if no SRC board exists) | Short description of the game, why you think it would be a good candidate for OSC, etc. (approx. 140 characters)```")
 
 if debug:
 	log("Discord", "I", "Logging in...")
