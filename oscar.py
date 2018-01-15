@@ -24,7 +24,7 @@ def log(service, level, message):
 if debug:
 	log("Core", "I", "Obscure Speedruns Club Advertising Robot (O.S.C.A.R.)")
 
-import aiohttp, asyncio, discord, sys  # Import the rest
+import aiohttp, asyncio, discord, re, sys  # Import the rest
 
 if debug:
 	log("Core", "OK", "Loaded modules")
@@ -49,6 +49,7 @@ def getToken(x):
 		log("Token", "E", "Can't read file '" + x + "'. Please verify that the file exists and contains a valid API token.")
 		sys.exit()
 
+# Tokens, channel IDs, SRC game IDs, etc
 keys = {
 	'discord': getToken('discord'),
 	'twitch': getToken('twitch'),
@@ -67,8 +68,9 @@ keys = {
 		'924',    # Lost Kingdoms
 		'14039'   # Mr. Nutz
 	],
-	'submissions': 'test_channel'
-}  # Tokens, client IDs, SRC game IDs, etc (should probably move to another file and read from there)
+	'submissions': '402277478183337987',
+	'regexLink': '((?:https?://)?(?:www\.)?[A-Za-z0-9]{1,}\.(?:(?:com)|(?:net)|(?:org)|(?:tv))(?:/[A-Z|a-z|-|_|=|?|0-9]*))'  # Thanks Tiln ;)
+}
 
 if debug:
 	log("Core", "OK", "Loaded keys")
@@ -418,40 +420,36 @@ async def on_ready():
 							
 							await sendEmbed(records, embed)
 				
-# Placeholder function for possible message interactions with the bot (commands) - unused for now
+# Message interactions with the bot (commands)
 @disc.event
 async def on_message(m):
-	global disc
+	global disc, keys
 	
 	if m.author == disc.user:  # Return if BOT receives its own message (happens basically every time it sends one)
 		return
 	
-	if str(m.channel) == keys['submissions']:  # Game submissions
+	if m.channel.id == keys['submissions']:  # Game submissions
 		if debug:
 			log("Discord", "D", "Received message from " + m.channel.name + " - " + m.author.name + " - " + m.content)
 		
-		if " | " in m.content:  # If user attempted submit format
-			if m.content.count(' | ') == 4:  # User got it right
-				sub = getSubmissions()  # Read submissions
-				
-				hasSubmitted = -1  # Index of user submission, if they are resubmitting
-				for i in range(len(sub)):
-					if sub[i].split(" | ")[0] == str(m.author):  # Found old submissiom
-						hasSubmitted = i
-						break
-				
-				if hasSubmitted > -1:  # If user is resubmitting
-					sub[hasSubmitted] = str(m.author) + " | " + m.content
-					await send(m.channel, m.author.name + ", you've submitted a second time, thus your previous submission has been overridden by the new one. Thank you for your submission! :heart:")
-					
-				else:  # New submission
-					sub.append(str(m.author) + " | " + m.content)
-					await send(m.channel, m.author.name + ", thank you for your game submission! I've accepted your submission and will keep it safe until voting begins. :heart:")
-				
-				setSubmissions(sub)  # Save submissions
+		if re.search(keys['regexLink'], m.content) != None:  # If user added a link
+			sub = getSubmissions()  # Read submissions
 			
-			else:  # User got it wrong
-				await send(m.channel, m.author.name + ", you seem to have attempted a game submission but it was formatted incorrectly. Please make sure your message is formatted as shown here:```Game Name | Platform(s) | Price | SRC link (or YouTube video if no SRC board exists) | Short description of the game, why you think it would be a good candidate for OSC, etc. (approx. 140 characters)```")
+			hasSubmitted = -1  # Index of user submission, if they are resubmitting
+			for i in range(len(sub)):
+				if sub[i].split(" | ")[0] == str(m.author):  # Found old submissiom
+					hasSubmitted = i
+					break
+			
+			if hasSubmitted > -1:  # If user is resubmitting
+				sub[hasSubmitted] = str(m.author) + " | " + m.content
+				await send(m.channel, m.author.name + ", you've submitted a second time, thus your previous submission has been overridden by the new one. Thank you for your submission! :heart:")
+				
+			else:  # New submission
+				sub.append(str(m.author) + " | " + m.content)
+				await send(m.channel, m.author.name + ", thank you for your game submission! I've accepted your submission and will keep it safe until voting begins. :heart:")
+				
+			setSubmissions(sub)  # Save submissions
 
 if debug:
 	log("Discord", "I", "Logging in...")
