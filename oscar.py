@@ -57,18 +57,19 @@ keys = {
 	'streams': '398462254603042819',
 	'records': '398657127675068417',
 	'games': [
-		'3dx7r56y',  # Croc 2
-		'46wwvl6r',  # Defy Gravity Extended
-		'76r9q568',  # Lost Kingdoms
-		'pdvjo9dw',  # Mr. Nutz
+		'm1zjjpm6',  # Aurora Trail
+		'76rko4d8',  # Dungeon of Zolthan
+		'm1zn0210',  # Pokémon Pinball: Ruby & Sapphire
+		'pdv4n4dw',  # Super Mario Sunshine 64
 	],
 	'twitch-games': [
-		'5776',   # Croc 2
-		'32283',  # Defy Gravity Extended
-		'924',    # Lost Kingdoms
-		'14039'   # Mr. Nutz
+		'501598',  # Aurora Trail
+		'xxxx',    # Dungeon of Zolthan
+		'8075',    # Pokémon Pinball: Ruby & Sapphire
+		'xxxx'     # Super Mario Sunshine 64
 	],
 	'submissions': '402277478183337987',
+	'submissions_open': False,
 	'regexLink': '((?:https?://)?(?:www\.)?[A-Za-z0-9]{1,}\.(?:(?:com)|(?:net)|(?:org)|(?:tv))(?:/[A-Z|a-z|-|_|=|?|0-9]*))'  # Thanks Tiln ;)
 }
 
@@ -223,10 +224,11 @@ async def on_ready():
 				runs[game][category['id']] = {'_wr': 999999999}  # Add category to the dict and leave placeholder WR in case of an empty leaderboard
 				
 				for run in (await src('leaderboards/' + game + '/category/' + category['id']))['runs']:  # Get all runs for the category
-					runs[game][category['id']][run['run']['players'][0]['id']] = run['run']['times']['primary_t']  # Save the run
+					player = run['run']['players'][0]['id'] if run['run']['players'][0]['rel'] == "user" else run['run']['players'][0]['name']  # Run submitter can be guest (no SRC account)
+					runs[game][category['id']][player] = run['run']['times']['primary_t']  # Save the run
 					
 					if debug:
-						log("SRC", "D", str(run['run']['players'][0]['id']) + " " + str(run['run']['times']['primary_t']))
+						log("SRC", "D", player + " " + str(run['run']['times']['primary_t']))
 					
 					if run["place"] == 1:  # If WR
 						runs[game][category['id']]['_wr'] = run['run']['times']['primary_t']  # Save WR time (used to determine if new WR is tied)
@@ -247,10 +249,11 @@ async def on_ready():
 				runs[level['id']][category['id']] = {'_wr': 999999999}
 				
 				for run in (await src('leaderboards/' + game + '/level/' + level['id'] + '/' + category['id']))['runs']:
-					runs[level['id']][category['id']][run['run']['players'][0]['id']] = run['run']['times']['primary_t']
+					player = run['run']['players'][0]['id'] if run['run']['players'][0]['rel'] == "user" else run['run']['players'][0]['name']
+					runs[level['id']][category['id']][player] = run['run']['times']['primary_t']
 					
 					if debug:
-						log("SRC", "D", str(run['run']['players'][0]['id']) + " " + str(run['run']['times']['primary_t']))
+						log("SRC", "D", player + " " + str(run['run']['times']['primary_t']))
 					
 					if run["place"] == 1:  # If WR
 						runs[level['id']][category['id']]['_wr'] = run['run']['times']['primary_t']
@@ -275,7 +278,7 @@ async def on_ready():
 		now = []  # Clean list of currently live OSC streamers
 		
 		for live in osc:
-			if live["game_id"] in keys["twitch-games"]:
+			#if live["game_id"] in keys["twitch-games"]:
 				now.append(live["user_id"])
 				
 				if live["user_id"] not in streaming:  # Streamer isn't in the dict if this is the first time we see them streaming
@@ -327,14 +330,16 @@ async def on_ready():
 						runs[game][category['id']] = {'_wr': 999999999}
 					
 					for run in (await src('leaderboards/' + game + '/category/' + category['id']))["runs"]:
+						player = run['run']['players'][0]['id'] if run['run']['players'][0]['rel'] == "user" else run['run']['players'][0]['name']
+						
 						if debug:
-							log("SRC", "D", str(run['run']['players'][0]['id']) + " " + str(run['run']['times']['primary_t']))
+							log("SRC", "D", player + " " + str(run['run']['times']['primary_t']))
 						
-						if run['run']['players'][0]['id'] not in runs[game][category['id']]:  # It is possible a new runner submits their first run
-							runs[game][category['id']][run['run']['players'][0]['id']] = 999999999
+						if player not in runs[game][category['id']]:  # It is possible a new runner submits their first run
+							runs[game][category['id']][player] = 999999999
 						
-						if run['run']['times']['primary_t'] < runs[game][category['id']][run['run']['players'][0]['id']]:  # If a runner has a better time than before
-							runs[game][category['id']][run['run']['players'][0]['id']] = run['run']['times']['primary_t']  # Save new PB
+						if run['run']['times']['primary_t'] < runs[game][category['id']][player]:  # If a runner has a better time than before
+							runs[game][category['id']][player] = run['run']['times']['primary_t']  # Save new PB
 							
 							text = " has achieved a new Personal Best!"
 							
@@ -356,7 +361,7 @@ async def on_ready():
 							elif debug:
 								log("SRC", "I", "^ New PB")
 							
-							runner = (await src('users/' + run['run']['players'][0]['id']))['names']['international']
+							runner = (await src('users/' + player))['names']['international'] if run['run']['players'][0]['rel'] == "user" else player
 							gameInfo = await src('games/' + game)
 							
 							# https://cog-creators.github.io/discord-embed-sandbox/
@@ -381,14 +386,16 @@ async def on_ready():
 						runs[level['id']][category['id']] = {'_wr': 999999999}
 					
 					for run in (await src('leaderboards/' + game + '/level/' + level['id'] + '/' + category['id']))['runs']:
+						player = run['run']['players'][0]['id'] if run['run']['players'][0]['rel'] == "user" else run['run']['players'][0]['name']
+						
 						if debug:
-							log("SRC", "D", str(run['run']['players'][0]['id']) + " " + str(run['run']['times']['primary_t']))
+							log("SRC", "D", player + " " + str(run['run']['times']['primary_t']))
 						
-						if run['run']['players'][0]['id'] not in runs[level['id']][category['id']]:
-							runs[level['id']][category['id']][run['run']['players'][0]['id']] = 999999999
+						if player not in runs[level['id']][category['id']]:
+							runs[level['id']][category['id']][player] = 999999999
 						
-						if run['run']['times']['primary_t'] < runs[level['id']][category['id']][run['run']['players'][0]['id']]:
-							runs[level['id']][category['id']][run['run']['players'][0]['id']] = run['run']['times']['primary_t']
+						if run['run']['times']['primary_t'] < runs[level['id']][category['id']][player]:
+							runs[level['id']][category['id']][player] = run['run']['times']['primary_t']
 							
 							text = " has achieved a new Personal Best!"
 							
@@ -410,7 +417,7 @@ async def on_ready():
 							elif debug:
 								log("SRC", "I", "^ New PB")
 							
-							runner = (await src('users/' + run['run']['players'][0]['id']))['names']['international']
+							runner = (await src('users/' + player))['names']['international'] if run['run']['players'][0]['rel'] == "user" else player
 							gameInfo = await src('games/' + game)
 							
 							# https://cog-creators.github.io/discord-embed-sandbox/
@@ -428,7 +435,7 @@ async def on_message(m):
 	if m.author == disc.user:  # Return if BOT receives its own message (happens basically every time it sends one)
 		return
 	
-	if m.channel.id == keys['submissions']:  # Game submissions
+	if m.channel.id == keys['submissions'] and key['submissions_open']	:  # Game submissions
 		if debug:
 			log("Discord", "D", "Received message from " + m.channel.name + " - " + m.author.name + " - " + m.content)
 		
