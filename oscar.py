@@ -64,14 +64,18 @@ keys = {
 	],
 	'twitch-games': [
 		'501598',  # Aurora Trail
-		'xxxx',    # Dungeon of Zolthan
-		'8075',    # Pokémon Pinball: Ruby & Sapphire
-		'xxxx'     # Super Mario Sunshine 64
+		'503569',  # Dungeon of Zolthan
+		'8075'     # Pokémon Pinball: Ruby & Sapphire
+		           # Super Mario Sunshine 64 is not supported by Twitch (GiantBomb)'s database - fangames not allowed
 	],
 	'submissions': '402277478183337987',
 	'submissions_open': False,
 	'regexLink': '((?:https?://)?(?:www\.)?[A-Za-z0-9]{1,}\.(?:(?:com)|(?:net)|(?:org)|(?:tv))(?:/[A-Z|a-z|-|_|=|?|0-9]*))'  # Thanks Tiln ;)
 }
+
+def sms64(x):  # SMS64 is not supported by Twitch because it is a fangame
+	x = x.lower()
+	return ("sms" in x or ("super" in x and "mario" in x and "sunshine" in x)) and "64" in x  # Dirty hardcode
 
 if debug:
 	log("Core", "OK", "Loaded keys")
@@ -82,7 +86,6 @@ def humanTime(x):
 	
 	s = str(int(x) % 60)
 	m = str((int(x) // 60) % 60)
-	h = int(x) // 3600
 	
 	s = ("0" * (2 - len(s))) + s
 	m = ("0" * (2 - len(m))) + m
@@ -278,7 +281,7 @@ async def on_ready():
 		now = []  # Clean list of currently live OSC streamers
 		
 		for live in osc:
-			#if live["game_id"] in keys["twitch-games"]:
+			if live["game_id"] in keys["twitch-games"] or sms64(live["title"]):
 				now.append(live["user_id"])
 				
 				if live["user_id"] not in streaming:  # Streamer isn't in the dict if this is the first time we see them streaming
@@ -289,13 +292,17 @@ async def on_ready():
 						log("Twitch", "I", live["user_id"] + " started streaming outside of cooldown")
 					
 					channel = (await helix('users?id=' + live["user_id"]))[0]  # Get info about streamer channel (used for profile picture, display name)
-					game = (await helix('games?id=' + live["game_id"]))[0]  # Get info about the game being streamed (used for box art, game name)
 					
 					# Create the Embed to be sent - https://cog-creators.github.io/discord-embed-sandbox/ helps a lot
 					embed=discord.Embed(title=live["title"], description="http://twitch.tv/" + channel["display_name"])
 					embed.set_author(name=channel["display_name"] + " is now streaming!", icon_url=channel["profile_image_url"])
 					embed.set_thumbnail(url=live["thumbnail_url"].format(width='480', height='480'))
-					embed.set_footer(text=game["name"], icon_url=game["box_art_url"].format(width='120', height='120'))
+
+					if sms64(live["title"]):
+						embed.set_footer(text="Super Mario Sunshine 64")
+					else:
+						game = (await helix('games?id=' + live["game_id"]))[0]  # Get info about the game being streamed (used for box art, game name)
+						embed.set_footer(text=game["name"], icon_url=game["box_art_url"].format(width='120', height='120'))
 					
 					await sendEmbed(streams, embed)
 					
