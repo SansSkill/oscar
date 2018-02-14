@@ -86,6 +86,7 @@ def humanTime(x):
 	
 	s = str(int(x) % 60)
 	m = str((int(x) // 60) % 60)
+	h = int(x) // 3600
 	
 	s = ("0" * (2 - len(s))) + s
 	m = ("0" * (2 - len(m))) + m
