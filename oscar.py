@@ -68,8 +68,8 @@ keys = {
 		'8075'     # Pokémon Pinball: Ruby & Sapphire
 		           # Super Mario Sunshine 64 is not supported by Twitch (GiantBomb)'s database - fangames not allowed
 	],
-	'submissions': '402277478183337987',
-	'submissions_open': False,
+	'submissions': '415568079926460416',
+	'submissions_open': True,
 	'regexLink': '((?:https?://)?(?:www\.)?[A-Za-z0-9]{1,}\.(?:(?:com)|(?:net)|(?:org)|(?:tv))(?:/[A-Z|a-z|-|_|=|?|0-9]*))'  # Thanks Tiln ;)
 }
 
@@ -457,11 +457,11 @@ async def on_message(m):
 					break
 			
 			if hasSubmitted > -1:  # If user is resubmitting
-				sub[hasSubmitted] = str(m.author) + " | " + m.content
+				sub[hasSubmitted] = str(m.author) + " | " + str(m.content).replace("\n", "\\n")
 				await send(m.channel, m.author.name + ", you've submitted a second time, thus your previous submission has been overridden by the new one. Thank you for your submission! :heart:")
 				
 			else:  # New submission
-				sub.append(str(m.author) + " | " + m.content)
+				sub.append(str(m.author) + " | " + str(m.content).replace("\n", "\\n"))
 				await send(m.channel, m.author.name + ", thank you for your game submission! I've accepted your submission and will keep it safe until voting begins. :heart:")
 				
 			setSubmissions(sub)  # Save submissions
