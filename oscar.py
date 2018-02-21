@@ -443,7 +443,7 @@ async def on_message(m):
 	if m.author == disc.user:  # Return if BOT receives its own message (happens basically every time it sends one)
 		return
 	
-	if m.channel.id == keys['submissions'] and key['submissions_open']	:  # Game submissions
+	if m.channel.id == keys['submissions'] and keys['submissions_open']	:  # Game submissions
 		if debug:
 			log("Discord", "D", "Received message from " + m.channel.name + " - " + m.author.name + " - " + m.content)
 		
