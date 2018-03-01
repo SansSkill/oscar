@@ -19,7 +19,7 @@ def timeSince(x):
 	
 def log(service, level, message):
 	global start
-	print("  [" + timeSince(start) + "|" + level + "]", service, ">>>", message)
+	print("[" + timeSince(start) + "|" + level + "]", service, ">>>", message)
 	
 if debug:
 	log("Core", "I", "Obscure Speedruns Club Advertising Robot (O.S.C.A.R.)")
@@ -57,25 +57,23 @@ keys = {
 	'streams': '398462254603042819',
 	'records': '398657127675068417',
 	'games': [
-		'm1zjjpm6',  # Aurora Trail
-		'76rko4d8',  # Dungeon of Zolthan
-		'm1zn0210',  # Pokémon Pinball: Ruby & Sapphire
-		'pdv4n4dw',  # Super Mario Sunshine 64
+		'46w2jl6r',  # Tag: The Power of Paint
+		'ldek2jd3',  # Beyblade VForce: Ultimate Blader Jam
+		'm1mq93d2',  # Castlevania: Bloodlines
+		'9do3wmdp',  # Monster Rancher Advance
+		'369vo21l',  # Thief: Gold
 	],
 	'twitch-games': [
-		'501598',  # Aurora Trail
-		'503569',  # Dungeon of Zolthan
-		'8075'     # Pokémon Pinball: Ruby & Sapphire
-		           # Super Mario Sunshine 64 is not supported by Twitch (GiantBomb)'s database - fangames not allowed
+		'31340',  # Tag: The Power of Paint
+		'32536',  # Beyblade VForce: Ultimate Blader Jam
+		'871',    # Castlevania: Bloodlines
+		'4295',   # Monster Rancher Advance
+		'4140'    # Thief: Gold
 	],
 	'submissions': '415568079926460416',
-	'submissions_open': True,
-	'regexLink': '((?:https?://)?(?:www\.)?[A-Za-z0-9]{1,}\.(?:(?:com)|(?:net)|(?:org)|(?:tv))(?:/[A-Z|a-z|-|_|=|?|0-9]*))'  # Thanks Tiln ;)
+	'submissions_open': False,
+	'regexLink': '((?:https?://)?(?:www\.)?[A-Za-z0-9]{1,}\.(?:(?:com)|(?:net)|(?:org)|(?:tv)|(?:be))(?:/[A-Z|a-z|-|_|=|?|0-9]*))'  # Thanks Tiln ;)
 }
-
-def sms64(x):  # SMS64 is not supported by Twitch because it is a fangame
-	x = x.lower()
-	return ("sms" in x or ("super" in x and "mario" in x and "sunshine" in x)) and "64" in x  # Dirty hardcode
 
 if debug:
 	log("Core", "OK", "Loaded keys")
@@ -282,7 +280,7 @@ async def on_ready():
 		now = []  # Clean list of currently live OSC streamers
 		
 		for live in osc:
-			if live["game_id"] in keys["twitch-games"] or sms64(live["title"]):
+			if live["game_id"] in keys["twitch-games"]:
 				now.append(live["user_id"])
 				
 				if live["user_id"] not in streaming:  # Streamer isn't in the dict if this is the first time we see them streaming
@@ -293,17 +291,13 @@ async def on_ready():
 						log("Twitch", "I", live["user_id"] + " started streaming outside of cooldown")
 					
 					channel = (await helix('users?id=' + live["user_id"]))[0]  # Get info about streamer channel (used for profile picture, display name)
+					game = (await helix('games?id=' + live["game_id"]))[0]  # Get info about the game being streamed (used for box art, game name)
 					
 					# Create the Embed to be sent - https://cog-creators.github.io/discord-embed-sandbox/ helps a lot
 					embed=discord.Embed(title=live["title"], description="http://twitch.tv/" + channel["display_name"])
 					embed.set_author(name=channel["display_name"] + " is now streaming!", icon_url=channel["profile_image_url"])
 					embed.set_thumbnail(url=live["thumbnail_url"].format(width='480', height='480'))
-
-					if sms64(live["title"]):
-						embed.set_footer(text="Super Mario Sunshine 64")
-					else:
-						game = (await helix('games?id=' + live["game_id"]))[0]  # Get info about the game being streamed (used for box art, game name)
-						embed.set_footer(text=game["name"], icon_url=game["box_art_url"].format(width='120', height='120'))
+					embed.set_footer(text=game["name"], icon_url=game["box_art_url"].format(width='120', height='120'))
 					
 					await sendEmbed(streams, embed)
 					
