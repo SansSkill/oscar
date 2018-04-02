@@ -70,8 +70,8 @@ keys = {
 		'4295',   # Monster Rancher Advance
 		'4140'    # Thief: Gold
 	],
-	'submissions': '415568079926460416',
-	'submissions_open': False,
+	'submissions': '426381730346172417',
+	'submissions_open': True,
 	'regexLink': '((?:https?://)?(?:www\.)?[A-Za-z0-9]{1,}\.(?:(?:com)|(?:net)|(?:org)|(?:tv)|(?:be))(?:/[A-Z|a-z|-|_|=|?|0-9]*))'  # Thanks Tiln ;)
 }
 
