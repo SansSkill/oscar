@@ -57,21 +57,19 @@ keys = {
 	'streams': '398462254603042819',
 	'records': '398657127675068417',
 	'games': [
-		'46w2jl6r',  # Tag: The Power of Paint
-		'ldek2jd3',  # Beyblade VForce: Ultimate Blader Jam
-		'm1mq93d2',  # Castlevania: Bloodlines
-		'9do3wmdp',  # Monster Rancher Advance
-		'369vo21l',  # Thief: Gold
+		'o1yp7k1q',  # Don't Starve Together
+		'kdk77x1m',  # The Floor is Jelly
+		'k6q3991g',  # The SpongeBob SquarePants Movie
+		'268kxy6p'   # Super Bomberman 4
 	],
 	'twitch-games': [
-		'31340',  # Tag: The Power of Paint
-		'32536',  # Beyblade VForce: Ultimate Blader Jam
-		'871',    # Castlevania: Bloodlines
-		'4295',   # Monster Rancher Advance
-		'4140'    # Thief: Gold
+		'488634',  # Don't Starve Together
+		'459378',  # The Floor is Jelly
+		'540',     # The SpongeBob SquarePants Movie
+		'9321'     # Super Bomberman 4
 	],
 	'submissions': '426381730346172417',
-	'submissions_open': True,
+	'submissions_open': False,
 	'regexLink': '((?:https?://)?(?:www\.)?[A-Za-z0-9]{1,}\.(?:(?:com)|(?:net)|(?:org)|(?:tv)|(?:be))(?:/[A-Z|a-z|-|_|=|?|0-9]*))'  # Thanks Tiln ;)
 }
 
