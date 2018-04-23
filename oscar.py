@@ -68,8 +68,8 @@ keys = {
 		'540',     # The SpongeBob SquarePants Movie
 		'9321'     # Super Bomberman 4
 	],
-	'submissions': '426381730346172417',
-	'submissions_open': False,
+	'submissions': '437952144965107743',
+	'submissions_open': True,
 	'regexLink': '((?:https?://)?(?:www\.)?[A-Za-z0-9]{1,}\.(?:(?:com)|(?:net)|(?:org)|(?:tv)|(?:be))(?:/[A-Z|a-z|-|_|=|?|0-9]*))'  # Thanks Tiln ;)
 }
 
