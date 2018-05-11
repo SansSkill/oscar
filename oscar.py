@@ -57,19 +57,19 @@ keys = {
 	'streams': '398462254603042819',
 	'records': '398657127675068417',
 	'games': [
-		'o1yp7k1q',  # Don't Starve Together
-		'kdk77x1m',  # The Floor is Jelly
-		'k6q3991g',  # The SpongeBob SquarePants Movie
-		'268kxy6p'   # Super Bomberman 4
+		'yd4g7kde',  # Kirby's Dream Course
+		'w6jlg54d',  # Vigilance
+		'o6gyq862',  # Super Mario Bros. Crossover
+		'268kxy6p'   # Millennium Racer: Y2K Fighters 
 	],
 	'twitch-games': [
-		'488634',  # Don't Starve Together
-		'459378',  # The Floor is Jelly
-		'540',     # The SpongeBob SquarePants Movie
-		'9321'     # Super Bomberman 4
+		'8546',  # Kirby's Dream Course
+		'1233',  # Vigilance
+		#'???',  # Super Mario Bros. Crossover
+		'7701'   # Millennium Racer: Y2K Fighters 
 	],
 	'submissions': '437952144965107743',
-	'submissions_open': True,
+	'submissions_open': False,
 	'regexLink': '((?:https?://)?(?:www\.)?[A-Za-z0-9]{1,}\.(?:(?:com)|(?:net)|(?:org)|(?:tv)|(?:be))(?:/[A-Z|a-z|-|_|=|?|0-9]*))'  # Thanks Tiln ;)
 }
 
