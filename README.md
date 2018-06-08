@@ -1,3 +1,5 @@
+# Deprecated and retired.
+
 # O.S.C.A.R.
 the Obscure Speedruns Club Advertising Robot.
 
