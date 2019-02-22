@@ -1,18 +1,19 @@
-﻿using System.IO;
-using System.Reflection;
+﻿using System;
+using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 
-namespace oscar
+namespace Oscar
 {
     class Program
     {
         private static DiscordBot discordBot;
+        private static readonly string projectDirectory = @"C:\Users\Gebruiker\source\repos\oscar\oscar";
+
         static void Main(string[] args)
         {
 #if DEBUG
-            var projectDirectory = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
-            var tokenFile = Path.Combine(projectDirectory, @"..\..\data\token");
-            var token = File.ReadAllText(tokenFile);
+            var token = File.ReadAllText(Path.Combine(projectDirectory, @"Data\token"));
 #else
             var token = args[0];
 #endif

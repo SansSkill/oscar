@@ -5,7 +5,7 @@ using System;
 using System.Reflection;
 using System.Threading.Tasks;
 
-namespace oscar
+namespace Oscar
 {
     public class DiscordBot
     {
