@@ -131,6 +131,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="data\token" />
+    <Compile Include="commands\HelloWorld.cs" />
     <Compile Include="DiscordBot.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
