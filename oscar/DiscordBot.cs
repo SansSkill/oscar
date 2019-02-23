@@ -1,11 +1,13 @@
 ﻿using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
+using oscar.Database;
 using System;
+using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 
-namespace Oscar
+namespace oscar
 {
     public class DiscordBot
     {
@@ -13,12 +15,18 @@ namespace Oscar
         private static CommandService commandService;
         private const char commandPrefix = '!';
         private const LogSeverity logSeverity = LogSeverity.Info;
+        private const ulong botMaintainerId = 124860286774673408;
 
         public DiscordBot(string token)
         {
             InitializeClient();
             InitializeCommandService();
             StartAsync(token).GetAwaiter().GetResult();
+        }
+
+        public async Task SendEmbed(ulong guildId, ulong channelId, Embed embed)
+        {
+            await client.GetGuild(guildId).GetTextChannel(channelId).SendMessageAsync("", false, embed);
         }
 
         private async Task StartAsync(string token)
@@ -61,13 +69,32 @@ namespace Oscar
             var message = arg as SocketUserMessage;
             var argPos = 0;
 
-            if (message.Author != client.CurrentUser && message.HasCharPrefix(commandPrefix, ref argPos))
+            if (IsAuthorizedUser(message.Author.Id) && message.HasCharPrefix(commandPrefix, ref argPos))
             {
                 var context = new SocketCommandContext(client, message);
                 var result = await commandService.ExecuteAsync(context, argPos, null);
                 if (!result.IsSuccess)
                 {
                     Console.WriteLine($"Command {context.Message.Content} resulted in error {result.ErrorReason}");
+                }
+            }
+        }
+
+        private static bool IsAuthorizedUser(ulong userId)
+        {
+            if (userId == botMaintainerId)
+            {
+                return true;
+            }
+            else if (userId == client.CurrentUser.Id)
+            {
+                return false;
+            }
+            else
+            {
+                using (var dbContext = new DatabaseContext())
+                {
+                    return dbContext.AuthorizedUsers.Any(x => x.UserId == userId);
                 }
             }
         }

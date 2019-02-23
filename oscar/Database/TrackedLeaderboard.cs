@@ -1,4 +1,4 @@
-﻿namespace Oscar.Database
+﻿namespace oscar.Database
 {
     public class TrackedLeaderboard
     {

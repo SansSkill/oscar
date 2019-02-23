@@ -1,10 +1,10 @@
 ﻿using Discord.Commands;
-using Oscar.Database;
+using oscar.Database;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Oscar.Commands
+namespace oscar.Commands
 {
     public class UntrackLeaderboard : ModuleBase<SocketCommandContext>
     {

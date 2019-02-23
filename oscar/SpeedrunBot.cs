@@ -1,6 +1,6 @@
 ﻿using SpeedrunComSharp;
 
-namespace Oscar
+namespace oscar
 {
     public static class SpeedrunBot
     {

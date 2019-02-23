@@ -1,5 +1,5 @@
 ﻿using Discord.Commands;
-using Oscar;
+using oscar;
 using System;
 using System.Threading.Tasks;
 

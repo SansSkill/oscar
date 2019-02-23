@@ -221,13 +221,22 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Commands\AuthorizeUser.cs" />
+    <Compile Include="Commands\UnauthorizeUser.cs" />
     <Compile Include="Commands\GetCategoryId.cs" />
     <Compile Include="Commands\GetGameId.cs" />
     <Compile Include="Commands\TrackLeaderboard.cs" />
     <Compile Include="Commands\UntrackLeaderboard.cs" />
+    <Compile Include="Database\AuthorizedUser.cs" />
     <Compile Include="Database\DatabaseContext.cs" />
     <Compile Include="Database\TrackedLeaderboard.cs" />
     <Compile Include="Database\TrackedTime.cs" />
+    <Compile Include="Migrations\20190223004201_migration.cs" />
+    <Compile Include="Migrations\20190223004201_migration.designer.cs">
+      <DependentUpon>20190223004201_migration.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\DatabaseContextModelSnapshot.cs" />
+    <Compile Include="RecordStatus.cs" />
     <Compile Include="SpeedrunBot.cs" />
     <None Include="Data\token" />
     <Compile Include="Commands\HelloWorld.cs" />

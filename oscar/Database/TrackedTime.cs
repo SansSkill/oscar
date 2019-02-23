@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 
-namespace Oscar.Database
+namespace oscar.Database
 {
     public class TrackedTime
     {

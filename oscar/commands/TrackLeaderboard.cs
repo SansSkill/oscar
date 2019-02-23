@@ -1,10 +1,10 @@
 ﻿using Discord.Commands;
-using Oscar.Database;
+using oscar.Database;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Oscar.Commands
+namespace oscar.Commands
 {
     public class TrackLeaderboard : ModuleBase<SocketCommandContext>
     {
@@ -49,7 +49,6 @@ namespace Oscar.Commands
             {
                 var runner = record.Player.Name;
                 var time = record.Times.Primary.ToString();
-                Console.WriteLine($"{runner} {time}");
                 var entity = dbContext.TrackedTimes.FirstOrDefault(tt => tt.CategoryId == categoryId && tt.Runner == runner);
                 if (entity == null)
                 {
